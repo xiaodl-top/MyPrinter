@@ -126,7 +126,13 @@ private val DOCUMENT_MIME_TYPES = arrayOf(
 private const val SUPPORTED_FORMATS =
     "PDF · JPG · PNG · GIF · WEBP · BMP · CAD · DWG · DOC · DOCX · PPT · PPTX · XLS · XLSX"
 
-/** Main screen: pick a file (or receive one from another app) and send it to the printer. */
+/**
+ * 首页：选择文件（或接收其它应用送来的文件）并发送到打印机。
+ *
+ * @param viewModel           打印页状态
+ * @param onOpenAppSettings   打开「设置」页（外观 / 关于）
+ * @param onOpenPrintSettings 打开「打印设置」页
+ */
 @Composable
 fun PrintScreen(
     viewModel: PrintViewModel,
@@ -138,8 +144,7 @@ fun PrintScreen(
     var showImageSourceDialog by remember { mutableStateOf(false) }
     var cameraTarget by remember { mutableStateOf<CameraTarget?>(null) }
 
-    // The system photo picker (gallery) is used for images; it falls back to a document picker
-    // only on devices that do not ship one.
+    // 图片优先使用系统相册选择器（Photo Picker）；只有不支持的系统才退化为文档选择器。
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) {
             FileIntake.persistReadPermission(context, null, uri)
@@ -176,8 +181,7 @@ fun PrintScreen(
     val printing = viewModel.printing.value
     val dialog = viewModel.dialog.value
 
-    // Keep the last dialog around while its exit animation plays, otherwise the text would vanish
-    // before the card has finished scaling away.
+    // 退出动画播放期间继续保留上一份弹窗内容，否则文字会在卡片缩小到一半时突然消失。
     var lastDialog by remember { mutableStateOf(dialog) }
     LaunchedEffect(dialog) {
         if (dialog != null) lastDialog = dialog
@@ -197,7 +201,7 @@ fun PrintScreen(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                 .imePadding()
-                // Tapping outside the inputs closes the soft keyboard.
+                // 点击输入框以外的区域时收起软键盘。
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { focusManager.clearFocus() })
                 },
@@ -410,7 +414,13 @@ fun PrintScreen(
     }
 }
 
-/** The result / configuration dialog: badge, message and one or two actions. */
+/**
+ * 结果 / 配置提示弹窗：状态徽章、正文与一到两个操作按钮。
+ *
+ * @param dialog              弹窗内容
+ * @param onDismiss           关闭回调
+ * @param onOpenPrintSettings 前往打印设置的回调（仅配置缺失时使用）
+ */
 @Composable
 private fun PrintDialogBody(
     dialog: PrintDialog,
@@ -453,6 +463,15 @@ private fun PrintDialogBody(
     }
 }
 
+/**
+ * 图片来源弹层里的一行选项。
+ *
+ * @param iconRes  图标
+ * @param title    主文案
+ * @param subtitle 说明
+ * @param tint     图标与底座的主题色
+ * @param onClick  点击回调
+ */
 @Composable
 private fun ImageSourceOption(
     iconRes: Int,
@@ -500,7 +519,13 @@ private fun ImageSourceOption(
     }
 }
 
-/** Header: logo mark, wordmark and the app settings entry. */
+/**
+ * 首页标题栏：品牌标识、应用名与右侧的设置入口。
+ *
+ * @param progress          滚动进度，驱动底色淡入
+ * @param onOpenAppSettings 打开「设置」页
+ * @param modifier          修饰符
+ */
 @Composable
 private fun HeaderBar(
     progress: () -> Float,
@@ -523,7 +548,12 @@ private fun HeaderBar(
     )
 }
 
-/** Hero card: the configured printer at a glance; tapping it opens the print settings screen. */
+/**
+ * 打印配置卡片：一眼看到当前打印机；只有右上角的「修改」可以进入打印设置页。
+ *
+ * @param config              当前打印配置
+ * @param onOpenPrintSettings 打开打印设置页
+ */
 @Composable
 private fun ConfigHero(config: PrinterConfig, onOpenPrintSettings: () -> Unit) {
     val colors = myPrinterColors
@@ -543,7 +573,7 @@ private fun ConfigHero(config: PrinterConfig, onOpenPrintSettings: () -> Unit) {
             .clip(shape)
             .background(brandGradient()),
     ) {
-        // Decorative light: two translucent discs give the flat gradient some depth.
+        // 装饰光：两团半透明圆斑让纯渐变多一些纵深。
         Box(
             Modifier
                 .matchParentSize()
@@ -587,9 +617,8 @@ private fun ConfigHero(config: PrinterConfig, onOpenPrintSettings: () -> Unit) {
                     )
                 }
                 Spacer(Modifier.width(10.dp))
-                // Only this button opens the print settings; the card itself is not a target.
-                // The touch area stays a comfortable 48dp while the visible chip keeps its
-                // original compact size.
+                // 只有这个按钮会打开打印设置，卡片本身不是点击目标。
+                // 外层保留 48dp 的舒适触控区，内层胶囊维持原来的紧凑尺寸。
                 Box(
                     modifier = Modifier
                         .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
@@ -637,7 +666,7 @@ private fun ConfigHero(config: PrinterConfig, onOpenPrintSettings: () -> Unit) {
                 )
             }
         }
-        // A slow, wide sheen keeps the hero feeling alive without competing with the content.
+        // 缓慢扫过的高光让卡片保持一点「活着」的感觉，但不会抢内容的风头。
         ShineOverlay(
             durationMillis = 8000,
             delayMillis = 2600,
@@ -646,6 +675,12 @@ private fun ConfigHero(config: PrinterConfig, onOpenPrintSettings: () -> Unit) {
     }
 }
 
+/**
+ * 卡片上的半透明信息胶囊（纸张、彩色等）。
+ *
+ * @param text    文案
+ * @param iconRes 图标
+ */
 @Composable
 private fun HeroPill(text: String, iconRes: Int) {
     Row(
@@ -672,7 +707,13 @@ private fun HeroPill(text: String, iconRes: Int) {
     }
 }
 
-/** The two file sources, drawn as equal tiles that respond to touch. */
+/**
+ * 两个文件来源，做成等宽的触控卡片。
+ *
+ * @param enabled         是否可点击（打印中禁用）
+ * @param onPickImage     选择图片
+ * @param onPickDocument  选择文档
+ */
 @Composable
 private fun SourceTiles(
     enabled: Boolean,
@@ -757,7 +798,20 @@ private fun SourceTile(
     }
 }
 
-/** The file that is about to be printed, with preview, copies and print options. */
+/**
+ * 即将打印的文件卡片：预览、份数与版式选项。
+ *
+ * @param selection            待打印文件
+ * @param copiesText           份数文本
+ * @param onCopiesChange       份数变化回调
+ * @param layout               是否横版
+ * @param onLayoutChange       横版切换回调
+ * @param duplex               是否双面（仅文档）
+ * @param onDuplexChange       双面切换回调
+ * @param pageRange            指定页码（仅文档）
+ * @param onPageRangeChange    页码变化回调
+ * @param openedFromAnotherApp 是否来自其它应用
+ */
 @Composable
 private fun SelectionCard(
     selection: PrintSelection,
@@ -852,7 +906,7 @@ private fun SelectionCard(
             checked = layout,
             onCheckedChange = onLayoutChange,
         )
-        // Duplex and page ranges only make sense for documents.
+        // 双面与页码只对文档有意义。
         if (!selection.isImage) {
             ToggleRow(
                 title = "双面打印",
@@ -874,6 +928,12 @@ private fun SelectionCard(
     }
 }
 
+/**
+ * 文件卡片上的元信息：图片 / 文档类型，以及「来自其他应用」标记。
+ *
+ * @param isImage              是否为图片
+ * @param openedFromAnotherApp 是否来自其它应用
+ */
 @Composable
 private fun SelectionMeta(isImage: Boolean, openedFromAnotherApp: Boolean) {
     val colors = myPrinterColors
@@ -901,7 +961,12 @@ private fun SelectionMeta(isImage: Boolean, openedFromAnotherApp: Boolean) {
     }
 }
 
-/** The image being printed, with a fade-in once the decoder has produced a bitmap. */
+/**
+ * 待打印图片的预览，解码完成后淡入。
+ *
+ * @param selection 待打印文件
+ * @param modifier  修饰符
+ */
 @Composable
 private fun ImagePreview(selection: PrintSelection, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -920,8 +985,7 @@ private fun ImagePreview(selection: PrintSelection, modifier: Modifier = Modifie
     val shape = RoundedCornerShape(20.dp)
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
-        // The frame follows the picture's own aspect ratio (within limits) instead of adding
-        // letterboxing on every photo.
+        // 预览框跟随图片自身比例（在上下限之间），避免每张照片都留下大片留白。
         val aspect = preview?.let { it.width.toFloat() / it.height.toFloat() } ?: (4f / 3f)
         val targetHeight by animateDpAsState(
             targetValue = if (preview == null) 190.dp else (maxWidth / aspect).coerceIn(160.dp, 300.dp),
@@ -975,7 +1039,14 @@ private fun ImagePreview(selection: PrintSelection, modifier: Modifier = Modifie
     }
 }
 
-/** The pinned bottom action: a gradient pill above a soft page-coloured fade. */
+/**
+ * 固定在底部的打印操作区：渐变按钮浮在渐隐的页面底色之上。
+ *
+ * @param printing 是否正在上传
+ * @param enabled  是否可点击
+ * @param onPrint  打印回调
+ * @param modifier 修饰符
+ */
 @Composable
 private fun PrintBar(
     printing: Boolean,
@@ -1008,7 +1079,9 @@ private fun PrintBar(
     }
 }
 
+/** 空值统一显示为「未设置」，避免卡片上出现空白。 */
 private fun displayValue(value: String): String = value.ifBlank { "未设置" }
 
+/** 判断设备上是否存在可用的相机应用。 */
 private fun hasCameraApp(context: Context): Boolean =
     Intent(MediaStore.ACTION_IMAGE_CAPTURE).resolveActivity(context.packageManager) != null

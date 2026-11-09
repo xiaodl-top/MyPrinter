@@ -3,6 +3,8 @@
 OnePrinter 云打印服务的 Android 客户端。选一张图片或一份文档，设置份数与版式，一键发送到打印服务；
 其它 App "分享到" / "打开方式" 送进来的文件也能直接打印。
 
+> 源码仓库：<https://github.com/xiaodl-top/MyPrinter>
+
 | | |
 |---|---|
 | 应用 ID / 包名 | `top.xiaodl.myprinter` |

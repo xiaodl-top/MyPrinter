@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    ViewBinding host for the Jetpack Compose UI: the activity inflates this layout through
-    ActivityMainBinding and attaches the composable tree to the ComposeView below.
+    Jetpack Compose 界面的 ViewBinding 宿主：Activity 通过 ActivityMainBinding
+    加载该布局，并把组件树挂到下面的 ComposeView 上。
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

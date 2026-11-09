@@ -4,8 +4,9 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
-        Android 11+ hides other apps unless they are declared here. The camera entry is needed so
-        that resolveActivity(ACTION_IMAGE_CAPTURE) can tell whether a camera app exists.
+        Android 11 起，未在此声明的应用对当前应用不可见。
+        声明相机 Intent 是为了让 resolveActivity(ACTION_IMAGE_CAPTURE)
+        能正确判断设备上是否存在可用的相机应用。
     -->
     <queries>
         <intent>
@@ -30,23 +31,23 @@
             <grant-uri-permission android:pathPrefix="/camera/" />
         </provider>
 
-        <!-- App-wide preferences (appearance, about), opened from the gear on the home screen. -->
+        <!-- 应用设置（外观 / 关于），从首页右上角齿轮进入。 -->
         <activity
             android:name=".AppSettingsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- Printer connection settings, opened from the printer card on the home screen. -->
+        <!-- 打印设置（连接参数），从首页打印机卡片的「修改」进入。 -->
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
         <!--
-            MainActivity also handles files opened from other apps (WeChat, DingTalk,
-            file managers, document viewers ...). Both "open with" (ACTION_VIEW) and
-            "share to" (ACTION_SEND / ACTION_SEND_MULTIPLE) are accepted so that any
-            printable file can be handed over and printed right away.
+            MainActivity 同时处理其它应用打开/分享过来的文件（微信、钉钉、
+            文件管理器、文档阅读器等）。既接受「打开方式」（ACTION_VIEW），
+            也接受「分享到」（ACTION_SEND / ACTION_SEND_MULTIPLE），
+            任何可打印的文件都能直接送入并立即打印。
         -->
         <activity
             android:name=".MainActivity"

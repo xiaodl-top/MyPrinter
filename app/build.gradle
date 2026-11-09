@@ -5,15 +5,14 @@ plugins {
 }
 
 // ---------------------------------------------------------------------------
-// Machine-local secrets
+// 本机私有配置（不提交）
 //
-// The print service URL, printer name and access code are deliberately NOT in
-// this repository. They are read at build time from (in order):
-//   1. a Gradle property:   -PDEFAULT_API_URL=...  or  ~/.gradle/gradle.properties
-//   2. local.properties     (already git-ignored; see local.properties.example)
-//   3. the process environment variable of the same name
-// and baked into BuildConfig. When a value is missing it becomes an empty
-// string, so the app still builds and simply asks the user to fill in settings.
+// 打印服务地址、打印机名称、验证口令刻意不放在仓库里。构建时按以下顺序读取：
+//   1. Gradle 属性：-PDEFAULT_API_URL=...  或 ~/.gradle/gradle.properties
+//   2. local.properties（已被 .gitignore 忽略，模板见 local.properties.example）
+//   3. 同名的进程环境变量
+// 并写入 BuildConfig。缺失时值为空字符串，工程仍可正常构建，
+// 只是首次启动会引导用户去设置页填写。
 // ---------------------------------------------------------------------------
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
@@ -23,7 +22,7 @@ if (localPropertiesFile.exists()) {
 
 def secretDefault = { String key ->
     def value = project.findProperty(key) ?: localProperties.getProperty(key) ?: System.getenv(key) ?: ''
-    // Escape the value for the generated Java string literal.
+    // 转义为生成的 Java 字符串字面量。
     value.replace('\\', '\\\\').replace('"', '\\"')
 }
 
@@ -45,7 +44,7 @@ android {
         versionCode 3
         versionName 'v2.0'
 
-        // Sensitive defaults, injected from local.properties / environment at build time.
+        // 敏感默认值：构建时从 local.properties / 环境变量注入。
         buildConfigField "String", "DEFAULT_API_URL", "\"${secretDefault('DEFAULT_API_URL')}\""
         buildConfigField "String", "DEFAULT_PRINTER", "\"${secretDefault('DEFAULT_PRINTER')}\""
         buildConfigField "String", "DEFAULT_CODE", "\"${secretDefault('DEFAULT_CODE')}\""

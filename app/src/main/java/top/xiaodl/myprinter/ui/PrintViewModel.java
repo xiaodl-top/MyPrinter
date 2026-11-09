@@ -19,26 +19,50 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** Holds the print screen state and performs the OkHttp upload. */
+/**
+ * 打印页的状态容器：持有待打印文件、份数与版式，并执行 OkHttp 上传。
+ *
+ * <p>所有字段都是 Compose 的 {@link MutableState}，界面直接读取即可自动重组；
+ * 上传在单线程池中执行，结果通过主线程 Handler 回投到状态里。
+ */
 public final class PrintViewModel extends AndroidViewModel {
 
+    /** 当前打印配置（从本机读取，进入页面时刷新）。 */
     public final MutableState<PrinterConfig> config;
+
+    /** 当前待打印文件，{@code null} 表示尚未选择。 */
     public final MutableState<PrintSelection> selection;
+
+    /** 份数输入框的文本（已过滤为非数字之外的内容，最多 3 位）。 */
     public final MutableState<String> copiesText;
-    /** Landscape printing; sent to the print service as layout=1/0. */
+
+    /** 横版打印；发送给打印服务时 layout=1/0。 */
     public final MutableState<Boolean> layout;
-    /** Duplex printing; sent to the print service as duplex=1/0. */
+
+    /** 双面打印；发送给打印服务时 duplex=1/0。 */
     public final MutableState<Boolean> duplex;
-    /** Page range such as "1-5,8,10-12"; empty means every page. */
+
+    /** 指定页码，例如 "1-5,8,10-12"；空字符串表示全部。 */
     public final MutableState<String> pageRange;
+
+    /** 是否正在上传（按钮显示「正在发送…」）。 */
     public final MutableState<Boolean> printing;
+
+    /** 当前需要展示的弹窗，{@code null} 表示没有弹窗。 */
     public final MutableState<PrintDialog> dialog;
-    /** True while the selected file is the one handed over by another app. */
+
+    /** 当前文件是否由其它应用传入。 */
     public final MutableState<Boolean> openedFromAnotherApp;
 
+    /** 单线程执行器：保证同一时间只有一个上传任务。 */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    /** 主线程 Handler，用于把后台结果写回 Compose 状态。 */
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    /**
+     * @param application 应用上下文（AndroidViewModel 自动注入）
+     */
     public PrintViewModel(Application application) {
         super(application);
         config = ComposeBridgeKt.composeState(ConfigStore.load(application));
@@ -52,13 +76,21 @@ public final class PrintViewModel extends AndroidViewModel {
         openedFromAnotherApp = ComposeBridgeKt.composeState(false);
     }
 
+    /** 重新从本机读取配置（从设置页返回时调用）。 */
     public void refreshConfig() {
         config.setValue(ConfigStore.load(getApplication()));
     }
 
+    /**
+     * 在应用内选择文件（相册 / 相机 / 文档选择器）。
+     *
+     * @param uri     文件地址
+     * @param name    文件名
+     * @param isImage 是否为图片
+     */
     public void selectFile(Uri uri, String name, boolean isImage) {
         selection.setValue(new PrintSelection(uri, name, isImage));
-        // A file picked inside the app is no longer "from another app".
+        // 应用内选择的文件不再算「来自其他应用」。
         openedFromAnotherApp.setValue(false);
         dialog.setValue(null);
         AppLog.user("选择文件完成",
@@ -66,8 +98,11 @@ public final class PrintViewModel extends AndroidViewModel {
     }
 
     /**
-     * Entry point for files coming from WeChat, the share sheet or "open with".
-     * The file is only staged; the user decides when to send it to the printer.
+     * 接收其它应用（微信、分享面板、打开方式）传入的文件。
+     *
+     * <p>只做暂存，是否发送由用户点击「开始打印」决定。
+     *
+     * @param file 外部来源文件
      */
     public void openIncomingFile(IncomingFile file) {
         openedFromAnotherApp.setValue(true);
@@ -77,6 +112,11 @@ public final class PrintViewModel extends AndroidViewModel {
                 "文件名=" + file.getName() + ", 类型=" + (file.isImage() ? "图片" : "文档"));
     }
 
+    /**
+     * 更新份数：只保留数字，最多 3 位（上限 999）。
+     *
+     * @param value 输入框原始文本
+     */
     public void updateCopies(String value) {
         String sanitized = digitsOnly(value, 3);
         if (!sanitized.equals(copiesText.getValue())) {
@@ -85,26 +125,35 @@ public final class PrintViewModel extends AndroidViewModel {
         }
     }
 
+    /** 切换横版打印。 */
     public void updateLayout(boolean value) {
         layout.setValue(value);
         AppLog.user("修改横版打印", "横版=" + (value ? 1 : 0));
     }
 
+    /** 切换双面打印（仅文档生效）。 */
     public void updateDuplex(boolean value) {
         duplex.setValue(value);
         AppLog.user("修改双面打印", "双面=" + (value ? 1 : 0));
     }
 
+    /** 更新指定页码，{@code null} 视为空（全部页码）。 */
     public void updatePageRange(String value) {
         pageRange.setValue(value == null ? "" : value);
         AppLog.user("修改指定页码",
                 "页码=" + (value == null || value.trim().isEmpty() ? "全部" : value));
     }
 
+    /** 关闭当前弹窗。 */
     public void dismissDialog() {
         dialog.setValue(null);
     }
 
+    /**
+     * 解析份数：非法或空输入按 1 处理，最小为 1。
+     *
+     * @return 实际份数
+     */
     public long copies() {
         try {
             return Math.max(1L, Long.parseLong(copiesText.getValue()));
@@ -113,6 +162,12 @@ public final class PrintViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * 发起打印：校验配置与文件，读取内容并在后台线程上传。
+     *
+     * <p>成功后弹出「打印请求已发送」，失败时把服务端/异常文本原样提示给用户。
+     * 双面与页码只对文档生效，图片固定单面、全部页码。
+     */
     public void printNow() {
         PrintSelection selected = selection.getValue();
         if (selected == null) {
@@ -134,7 +189,7 @@ public final class PrintViewModel extends AndroidViewModel {
 
         long copies = copies();
         copiesText.setValue(Long.toString(copies));
-        // Duplex and page ranges only apply to documents; images always print single sided.
+        // 双面与页码只对文档有意义；图片始终单面打印。
         boolean imageFile = selected.isImage();
         String requestPageRange = imageFile ? "" : pageRange.getValue();
         boolean requestDuplex = !imageFile && Boolean.TRUE.equals(duplex.getValue());
@@ -199,10 +254,18 @@ public final class PrintViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
+        // ViewModel 销毁时中断上传，避免泄漏线程。
         executor.shutdownNow();
         super.onCleared();
     }
 
+    /**
+     * 只保留数字字符，并限制长度。
+     *
+     * @param value 原始文本，可为 {@code null}
+     * @param limit 最大保留位数
+     * @return 过滤后的数字串
+     */
     private static String digitsOnly(String value, int limit) {
         if (value == null) {
             return "";

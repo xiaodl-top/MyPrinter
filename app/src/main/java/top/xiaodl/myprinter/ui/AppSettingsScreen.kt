@@ -1,5 +1,8 @@
 package top.xiaodl.myprinter.ui
 
+import android.widget.Toast
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,11 +17,14 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -26,10 +32,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import top.xiaodl.myprinter.BuildConfig
@@ -37,21 +46,30 @@ import top.xiaodl.myprinter.R
 import top.xiaodl.myprinter.ui.components.AuroraBackdrop
 import top.xiaodl.myprinter.ui.components.GlassCard
 import top.xiaodl.myprinter.ui.components.Hairline
+import top.xiaodl.myprinter.ui.components.IconTile
 import top.xiaodl.myprinter.ui.components.LogoMark
 import top.xiaodl.myprinter.ui.components.PageHeader
 import top.xiaodl.myprinter.ui.components.Reveal
 import top.xiaodl.myprinter.ui.components.SectionLabel
 import top.xiaodl.myprinter.ui.components.SegmentedControl
 import top.xiaodl.myprinter.ui.components.SoftIconButton
+import top.xiaodl.myprinter.ui.components.pressScale
+
+/** 项目源码仓库地址。 */
+private const val PROJECT_URL = "https://github.com/xiaodl-top/MyPrinter"
 
 /**
- * App-wide preferences: appearance and the about block. Print configuration has its own screen,
- * reachable from the printer card on the home screen.
+ * 应用设置页：外观（浅色 / 深色 / 跟随系统）与「关于」。
+ *
+ * <p>打印相关配置不在此页，而是在主页打印机卡片的「修改」中进入的打印设置页。
+ *
+ * @param onBack 返回上一页的回调
  */
 @Composable
 fun AppSettingsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
-    // Read as state: selecting another mode recomposes this screen (and the whole app) at once.
+    val uriHandler = LocalUriHandler.current
+    // 读取为状态：切换模式后本页（以及整个应用）会立即重组。
     val themeMode = AppTheme.mode.value
     val scrollState = rememberScrollState()
     val headerProgress = remember {
@@ -138,7 +156,6 @@ fun AppSettingsScreen(onBack: () -> Unit) {
                                         letterSpacing = 0.3.sp,
                                         color = TextSecondary,
                                     )
-//                                    Spacer(Modifier.height(3.dp))
                                     Text(
                                         text = "OnePrinter 云打印客户端",
                                         fontSize = 11.sp,
@@ -146,34 +163,25 @@ fun AppSettingsScreen(onBack: () -> Unit) {
                                     )
                                 }
                             }
-                            /*
-                            Spacer(Modifier.height(16.dp))
+                            Spacer(Modifier.height(14.dp))
                             Hairline()
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                text = "打印配置（服务地址、口令、打印机等）请在主页点击打印机卡片右上角的「修改」。",
-                                fontSize = 11.5.sp,
-                                lineHeight = 17.sp,
-                                color = TextTertiary,
+                            Spacer(Modifier.height(6.dp))
+                            // 源码仓库入口：整行可点，用浏览器打开。
+                            ProjectRepositoryRow(
+                                onClick = {
+                                    runCatching { uriHandler.openUri(PROJECT_URL) }
+                                        .onFailure {
+                                            Toast.makeText(
+                                                context,
+                                                "无法打开浏览器",
+                                                Toast.LENGTH_SHORT,
+                                            ).show()
+                                        }
+                                },
                             )
-                            */
                         }
                     }
                 }
-                /*
-                Spacer(Modifier.height(22.dp))
-
-                Reveal(index = 2) {
-                    Text(
-                        text = "设置只保存在这台设备上，不会上传到任何服务器。",
-                        fontSize = 11.sp,
-                        lineHeight = 16.sp,
-                        color = TextTertiary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-                */
             }
         }
 
@@ -190,6 +198,56 @@ fun AppSettingsScreen(onBack: () -> Unit) {
                 )
             },
             modifier = Modifier.align(Alignment.TopCenter),
+        )
+    }
+}
+
+/**
+ * 「关于」卡片里的源码仓库入口。
+ *
+ * @param onClick 打开仓库地址的回调
+ */
+@Composable
+private fun ProjectRepositoryRow(onClick: () -> Unit) {
+    val interaction = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .pressScale(interaction, pressedScale = 0.98f)
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                onClickLabel = "在浏览器中打开项目源码",
+                onClick = onClick,
+            )
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconTile(iconRes = R.drawable.ic_code, tint = Primary, size = 40.dp, corner = 13.dp)
+        Spacer(Modifier.width(11.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = "项目源码",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextPrimary,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = PROJECT_URL,
+                fontSize = 11.sp,
+                color = TextTertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            painter = painterResource(R.drawable.ic_open_in_new),
+            contentDescription = null,
+            tint = TextTertiary,
+            modifier = Modifier.size(16.dp),
         )
     }
 }

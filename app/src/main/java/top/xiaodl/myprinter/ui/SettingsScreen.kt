@@ -62,7 +62,14 @@ import top.xiaodl.myprinter.ui.components.SectionLabel
 import top.xiaodl.myprinter.ui.components.SoftIconButton
 import top.xiaodl.myprinter.ui.components.ToggleRow
 
-/** The only place where printer connection settings can be changed. */
+/**
+ * 打印设置页：这是修改打印机连接参数的唯一入口。
+ *
+ * <p>页面只负责编辑与校验输入，保存动作交给宿主 Activity 写入本机配置。
+ *
+ * @param onBack 返回回调
+ * @param onSave 保存回调（服务地址、打印机名称、纸张、口令、是否彩色）
+ */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -98,7 +105,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                 .imePadding()
-                // Tapping outside the inputs closes the soft keyboard.
+                // 点击输入框以外的区域时收起软键盘。
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { focusManager.clearFocus() })
                 },
@@ -131,7 +138,7 @@ fun SettingsScreen(
                             Spacer(Modifier.height(16.dp))
                             FieldLabel("验证口令")
                             Spacer(Modifier.height(7.dp))
-                            // Masked by default; the text is only shown while the field is focused.
+                            // 默认以圆点掩码显示，仅在获得焦点时显示明文。
                             AppTextField(
                                 value = code,
                                 onValueChange = { code = it },
@@ -235,7 +242,7 @@ fun SettingsScreen(
     }
 }
 
-/** The one warning the screen must keep: these values drive every print request. */
+/** 必须保留的警告：这里的每个值都会直接影响打印请求。 */
 @Composable
 private fun WarningBanner() {
     val shape = RoundedCornerShape(20.dp)

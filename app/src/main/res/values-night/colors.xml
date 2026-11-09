@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Night palette; mirrors the dark colours in ui/Theme.kt. -->
+<!-- 深色配色；与 ui/Theme.kt 中的深色调色板保持一致。 -->
 <resources>
     <color name="primary">#8AB4FF</color>
     <color name="primary_dark">#4C7DFF</color>

@@ -60,9 +60,23 @@ import top.xiaodl.myprinter.ui.brandGradient
 import top.xiaodl.myprinter.ui.myPrinterColors
 
 /**
- * The app's single-line input. It has no Material box: the field is a soft filled surface whose
- * hairline border warms up to the brand colour and lifts a coloured glow while focused — a small
- * detail that makes typing feel connected to the UI.
+ * 应用统一的单行输入框。
+ *
+ * <p>没有使用 Material 的 OutlinedTextField：这里是一块柔和的填充表面，细描边在获得焦点时渐变为品牌色，
+ * 并浮起一层彩色光晕——让输入动作与界面产生联系。
+ *
+ * @param value                 当前文本
+ * @param onValueChange         文本变化回调
+ * @param placeholder           占位提示
+ * @param keyboardType          键盘类型
+ * @param imeAction             软键盘回车键行为
+ * @param visualTransformation  文本变换（如密码掩码）
+ * @param leadingIconRes        左侧图标（可选）
+ * @param trailing              右侧附加内容（可选）
+ * @param onFocusChange         焦点变化回调（可选）
+ * @param onImeAction           点击键盘完成键后的回调（可选）
+ * @param enabled               是否可编辑
+ * @param minHeight             最小高度
  */
 @Composable
 fun AppTextField(
@@ -176,7 +190,7 @@ fun AppTextField(
     )
 }
 
-/** A label above a field, so long hints stay readable instead of being squeezed into the box. */
+/** 输入框上方的小标签，避免长提示挤在输入框里看不清。 */
 @Composable
 fun FieldLabel(text: String, modifier: Modifier = Modifier) {
     Text(
@@ -190,8 +204,15 @@ fun FieldLabel(text: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * Copies stepper: minus / editable value / plus. The editable middle keeps free typing possible
- * (the view model already sanitises digits and the 3-digit limit).
+ * 份数步进器：减号 / 可直接编辑的数字 / 加号。
+ *
+ * <p>中间的输入框保留自由输入能力；数字过滤与 3 位上限由 ViewModel 负责。
+ *
+ * @param value        当前份数文本
+ * @param onValueChange 份数变化回调
+ * @param modifier     修饰符
+ * @param min          最小份数
+ * @param max          最大份数
  */
 @Composable
 fun QuantityStepper(
@@ -261,6 +282,7 @@ fun QuantityStepper(
     }
 }
 
+/** 步进器两端的圆形加减按钮；不可用时降低不透明度。 */
 @Composable
 private fun StepperButton(
     iconRes: Int,
@@ -294,8 +316,12 @@ private fun StepperButton(
 }
 
 /**
- * A custom switch: the track fills with the brand gradient as it turns on, the thumb overshoots
- * with a light spring and the whole control scales slightly while pressed.
+ * 自定义开关：打开时轨道填满品牌渐变，滑块带轻微过冲的弹簧，整体在按压时略微缩小。
+ *
+ * @param checked         当前状态
+ * @param onCheckedChange 状态变化回调
+ * @param modifier        修饰符
+ * @param enabled         是否可交互
  */
 @Composable
 fun GlowSwitch(
@@ -369,7 +395,16 @@ fun GlowSwitch(
     }
 }
 
-/** A full-width setting row: title, optional supporting line, trailing control. */
+/**
+ * 整行设置项：左侧标题与说明，右侧约束控件。
+ *
+ * @param title           标题
+ * @param checked         开关状态
+ * @param onCheckedChange 状态变化回调
+ * @param modifier        修饰符
+ * @param subtitle        说明文字（可选）
+ * @param enabled         是否可交互
+ */
 @Composable
 fun ToggleRow(
     title: String,

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Settings leaves to the right, the reverse of its entrance. -->
+<!-- 设置页向右退出，与进入动画互为镜像。 -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:interpolator="@android:interpolator/fast_out_linear_in">
     <translate

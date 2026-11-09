@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Adaptive icon background: the brand gradient used by the app UI, plus a soft light
-    source in the upper-left corner so the icon does not read as a flat rectangle.
+    自适应图标背景：与应用 UI 相同的品牌渐变，并在左上角叠加一层柔光，
+    避免图标看起来只是一块死板的纯色矩形。
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"

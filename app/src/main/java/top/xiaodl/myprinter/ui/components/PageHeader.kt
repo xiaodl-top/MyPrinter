@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,10 +26,17 @@ import top.xiaodl.myprinter.ui.TextTertiary
 import top.xiaodl.myprinter.ui.myPrinterColors
 
 /**
- * The shared top bar. Its surface only appears once the page is scrolled, so at rest the content
- * breathes under the status bar while the title stays legible on top of the ambient backdrop.
+ * 两个页面共用的吸顶标题栏。
  *
- * [progress] is a lambda so the scroll position is read in the draw phase, never in composition.
+ * <p>页面未滚动时背景透明，内容可以从状态栏下方穿过；滚动后底色逐渐变实，标题始终清晰。
+ * [progress] 用 lambda 传入，滚动位置只在绘制阶段读取，永远不会因为滚动而重组标题栏。
+ *
+ * @param title    主标题
+ * @param subtitle 副标题（小号、大写字距）
+ * @param progress 0..1 的滚动进度，驱动底色与分隔线的不透明度
+ * @param leading  左侧内容（Logo 或返回按钮）
+ * @param modifier 修饰符
+ * @param trailing 右侧内容（可选）
  */
 @Composable
 fun PageHeader(
@@ -42,12 +49,14 @@ fun PageHeader(
 ) {
     val colors = myPrinterColors
     Box(modifier = modifier.fillMaxWidth()) {
+        // 铺满整个头部（含状态栏区域）的底色，随滚动进度淡入。
         Box(
             Modifier
                 .matchParentSize()
                 .graphicsLayer { alpha = progress() }
                 .background(colors.pageBackground),
         )
+        // 滚动后出现的 1dp 分隔线。
         Box(
             Modifier
                 .align(Alignment.BottomCenter)

@@ -1,22 +1,21 @@
 # ---------------------------------------------------------------------------
-# MyPrinter local configuration template
+# MyPrinter 本机配置模板
 #
-# Copy this file to "local.properties" (git-ignored) and fill in your own values.
-# These DEFAULT_* values are injected into BuildConfig at build time; they are
-# never stored in the repository. You can also provide them as Gradle properties
-# (-PDEFAULT_API_URL=...) or as environment variables of the same name.
+# 把本文件复制为 "local.properties"（已被 git 忽略）后填写自己的值。
+# 这些 DEFAULT_* 值会在构建时注入 BuildConfig，永远不会进入仓库；
+# 也可以用 Gradle 属性（-PDEFAULT_API_URL=...）或同名环境变量提供。
 # ---------------------------------------------------------------------------
 
-# Android SDK location. Usually written by Android Studio.
-# Windows paths escape the colon and the backslashes, e.g.
+# Android SDK 位置，通常由 Android Studio 自动写入。
+# Windows 路径需要转义冒号与反斜杠，例如：
 # sdk.dir=D\:\\Android\\Sdk
 #sdk.dir=
 
-# Print service endpoint, e.g. http://192.168.1.10:8080/upload/single
+# 打印服务上传地址，例如 http://192.168.1.10:8080/upload/single
 DEFAULT_API_URL=
 
-# Printer name as known by the print service, e.g. Office-Printer
+# 打印服务端的打印机名称，例如 Office-Printer
 DEFAULT_PRINTER=
 
-# Access code required by the print service
+# 打印服务要求的验证口令
 DEFAULT_CODE=

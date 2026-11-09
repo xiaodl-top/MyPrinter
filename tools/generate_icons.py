@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Generates the MyPrinter launcher icons.
+"""生成 MyPrinter 的启动图标。
 
-The launcher icon is the same mark as the in-app header logo: the brand gradient
-(azure -> indigo -> violet) with the white printer glyph. Legacy icons (API 24/25)
-are rendered here as WebP; the adaptive icon layers are plain vector drawables in
-res/drawable, so they stay crisp on every density.
+启动图标与应用内标题栏的标识一致：品牌渐变（天蓝 -> 靛蓝 -> 紫罗兰）
+配上白色打印机字形。旧版图标（API 24/25）在这里渲染成 WebP；自适应图标的两层
+则放在 res/drawable 中，用矢量绘制，任何密度下都保持清晰。
 
-Usage:
+用法：
     python tools/generate_icons.py
 """
 
@@ -21,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, "app", "src", "main", "res")
 PREVIEW = os.path.join(ROOT, "screenshots")
 
-# Same stops as brandGradient() in ui/Theme.kt.
+# 与 ui/Theme.kt 中 brandGradient() 相同的三个色标。
 STOPS = [
     (0.00, (0x2F, 0x6B, 0xFF)),
     (0.55, (0x5B, 0x4B, 0xFF)),
@@ -30,7 +29,7 @@ STOPS = [
 
 MASTER = 1024
 SUPERSAMPLE = 4
-# Legacy icon densities: folder -> size in px (48dp .. 192dp).
+# 旧版图标各密度：目录 -> 像素尺寸（48dp .. 192dp）。
 DENSITIES = {
     "mdpi": 48,
     "hdpi": 72,
@@ -41,7 +40,7 @@ DENSITIES = {
 
 
 def gradient(size: int) -> np.ndarray:
-    """Diagonal (135 deg) three-stop gradient as an RGB float array."""
+    """生成 135° 对角方向的三段渐变，返回 RGB 浮点数组。"""
     axis = np.linspace(0.0, 1.0, size)
     t = (axis[None, :] + axis[:, None]) / 2.0
     channels = [
@@ -52,7 +51,7 @@ def gradient(size: int) -> np.ndarray:
 
 
 def add_highlight(rgb: np.ndarray) -> np.ndarray:
-    """Soft light source in the upper-left corner, matching the hero card."""
+    """左上角的柔光，与首页打印机卡片的光效一致。"""
     size = rgb.shape[0]
     axis = np.linspace(0.0, 1.0, size)
     dx = axis[None, :] - 0.16
@@ -64,15 +63,15 @@ def add_highlight(rgb: np.ndarray) -> np.ndarray:
 
 
 def glyph_mask(size: int, ink_ratio: float) -> Image.Image:
-    """Alpha mask of the Material 'print' glyph, in 24x24 coordinates.
+    """Material「print」字形的透明度蒙版，使用 24x24 坐标系。
 
-    The glyph is the same path as drawable/ic_print.xml: a top sheet, a body with
-    rounded top corners, a front sheet, plus the two cut-outs (paper slot and LED).
+    字形与应用内的 drawable/ic_print.xml 相同：上方出纸、顶部圆角的机身、
+    前方出纸，以及两个镂空（出纸口与状态灯）。
     """
     big = size * SUPERSAMPLE
     mask = Image.new("L", (big, big), 0)
     draw = ImageDraw.Draw(mask)
-    # Ink is 20 units wide (x 2..22); centre it so the mark sits optically centred.
+    # 墨迹宽 20 个单位（x 2..22）；居中放置，让标识在视觉上保持居中。
     scale = ink_ratio * big / 20.0
     offset = big / 2.0 - 12.0 * scale
 
@@ -90,7 +89,7 @@ def glyph_mask(size: int, ink_ratio: float) -> Image.Image:
         corners=(True, True, False, False),
     )
     draw.rectangle([x(6), y(17), x(18), y(21)], fill=255)
-    # Cut-outs: the paper slot and the status LED.
+    # 镂空：出纸口与状态灯。
     draw.rectangle([x(8), y(14), x(16), y(19)], fill=0)
     draw.ellipse([x(18), y(10), x(20), y(12)], fill=0)
     return mask.resize((size, size), Image.LANCZOS)
@@ -131,13 +130,13 @@ def main() -> None:
         save_webp(render(size, circular=False, ink_ratio=0.52), f"mipmap-{density}", "ic_launcher")
         save_webp(render(size, circular=True, ink_ratio=0.50), f"mipmap-{density}", "ic_launcher_round")
 
-    # Reference renders for review (not shipped).
+    # 供自查的预览图（不随应用发布）。
     render(512, circular=False, ink_ratio=0.52).save(
         os.path.join(PREVIEW, "icon-rounded-square.png")
     )
     render(512, circular=True, ink_ratio=0.50).save(os.path.join(PREVIEW, "icon-circle.png"))
 
-    # Adaptive icon preview: 108dp canvas, glyph at 48/108, masked to the 72dp circle.
+    # 自适应图标预览：108dp 画布，字形占 48/108，并按 72dp 圆形裁切。
     canvas = render(432, circular=False, ink_ratio=48.0 / 108.0, shape_alpha=False)
     mask = Image.new("L", (432, 432), 0)
     ImageDraw.Draw(mask).ellipse([24, 24, 408, 408], fill=255)

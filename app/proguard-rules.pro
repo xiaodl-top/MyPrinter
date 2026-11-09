@@ -1,2 +1,2 @@
-# The application has no reflection-based rules at present.
+# 当前应用没有基于反射的混淆规则。
 

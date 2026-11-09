@@ -4,18 +4,22 @@ import android.app.Activity;
 import android.os.Build;
 
 /**
- * Slide transitions shared by the two settings screens.
+ * 两个设置页共用的滑动转场。
  *
- * <p>Android 14+ plays the animations declared on the activity that opens or closes; older
- * releases read the same resources through {@link #finish(Activity)} and the launcher's
- * {@code overridePendingTransition} call.
+ * <p>Android 14（API 34）起由被打开/关闭的 Activity 自己声明动画；更低版本通过
+ * {@link #finish(Activity)} 以及启动方的 {@code overridePendingTransition} 读取同一套资源。
  */
 public final class NavTransitions {
 
     private NavTransitions() {
+        // 工具类，禁止实例化。
     }
 
-    /** Must be called from the activity's {@code onCreate}. */
+    /**
+     * 声明设置页的进入 / 退出转场。必须在 Activity 的 {@code onCreate} 中调用。
+     *
+     * @param activity 设置页 Activity
+     */
     public static void install(Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             activity.overrideActivityTransition(
@@ -29,7 +33,11 @@ public final class NavTransitions {
         }
     }
 
-    /** Must be called from the activity's {@code finish()}, after {@code super.finish()}. */
+    /**
+     * 低版本系统上为关闭动作补上转场。必须在 {@code super.finish()} 之后调用。
+     *
+     * @param activity 正在关闭的设置页 Activity
+     */
     public static void finish(Activity activity) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             activity.overridePendingTransition(R.anim.nav_pop_enter, R.anim.nav_pop_exit);

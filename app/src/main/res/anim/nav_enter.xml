@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Settings slides in from the right while fading up: quick start, gentle landing. -->
+<!-- 设置页从右侧滑入并淡入：起步快、落位柔和。 -->
 <set xmlns:android="http://schemas.android.com/apk/res/android"
     android:interpolator="@android:interpolator/fast_out_slow_in">
     <translate

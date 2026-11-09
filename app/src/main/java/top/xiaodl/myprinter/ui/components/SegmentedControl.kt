@@ -37,9 +37,16 @@ import androidx.compose.ui.unit.sp
 import top.xiaodl.myprinter.ui.myPrinterColors
 
 /**
- * A segmented control with a sliding selection pill. The pill moves with a light spring, so
- * switching between two neighbouring options reads as one continuous gesture instead of a
- * colour flip.
+ * 分段选择控件，选中项是一个会滑动的胶囊。
+ *
+ * <p>胶囊用弹簧移动，因此在相邻选项之间切换时是一段连续运动，而不是颜色突变。
+ *
+ * @param options       选项列表
+ * @param selectedIndex 当前选中项下标
+ * @param label         选项文案
+ * @param onSelect      选中回调（参数为下标）
+ * @param modifier      修饰符
+ * @param enabled       是否可交互
  */
 @Composable
 fun <T> SegmentedControl(
@@ -67,13 +74,14 @@ fun <T> SegmentedControl(
     ) {
         val itemWidth = maxWidth / options.size.toFloat()
         val targetOffset = itemWidth * selectedIndex
-        // Read in the layout phase: the pill slides without recomposing the whole control.
+        // 在布局阶段读取偏移，胶囊滑动时不会重组整个控件。
         val offset by animateDpAsState(
             targetValue = targetOffset,
             animationSpec = spring(dampingRatio = 0.80f, stiffness = 420f),
             label = "segmentOffset",
         )
 
+        // 选中胶囊：浅色模式是带投影的白块，深色模式用更亮的描边色提亮。
         Box(
             Modifier
                 .offset { IntOffset(offset.roundToPx(), 0) }
@@ -104,6 +112,7 @@ fun <T> SegmentedControl(
                         .weight(1f)
                         .fillMaxHeight()
                         .clip(pillShape)
+                        // 用 selectable 而不是 clickable：读屏会朗读成「单选按钮」。
                         .selectable(
                             selected = active,
                             enabled = enabled,

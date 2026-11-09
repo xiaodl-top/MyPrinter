@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import top.xiaodl.myprinter.ui.BorderColor
-import top.xiaodl.myprinter.ui.MyPrinterColors
 import top.xiaodl.myprinter.ui.ScrimColor
 import top.xiaodl.myprinter.ui.SurfaceColor
 import top.xiaodl.myprinter.ui.TextPrimary
@@ -64,7 +63,7 @@ import top.xiaodl.myprinter.ui.brandGradient
 import top.xiaodl.myprinter.ui.myPrinterColors
 import kotlin.math.roundToInt
 
-/** Full-screen dimming layer; tapping it dismisses the overlay. */
+/** 全屏遮罩层；点击遮罩关闭弹层。 */
 @Composable
 fun ModalScrim(visible: Boolean, onDismiss: () -> Unit) {
     AnimatedVisibility(
@@ -86,9 +85,14 @@ fun ModalScrim(visible: Boolean, onDismiss: () -> Unit) {
 }
 
 /**
- * A bottom sheet that slides up over the page. It can be dismissed by tapping the scrim, by
- * dragging the handle down, or by the caller changing [visible]; the exit animation always plays
- * because [AnimatedVisibility] keeps the content composed until it finishes.
+ * 从底部滑入的弹层。
+ *
+ * <p>三种关闭方式：点击遮罩、向下拖动顶部把手、调用方把 [visible] 置为 false；
+ * 退出动画一定会播放，因为 [AnimatedVisibility] 会在动画结束前保持内容处于组合中。
+ *
+ * @param visible   是否显示
+ * @param onDismiss 请求关闭的回调
+ * @param content   弹层内容
  */
 @Composable
 fun BoxScope.BottomSheet(
@@ -127,7 +131,7 @@ fun BoxScope.BottomSheet(
                 .navigationBarsPadding()
                 .padding(start = 20.dp, end = 20.dp, bottom = 22.dp),
         ) {
-            // Drag handle: the only place that accepts the dismiss gesture, so rows stay tappable.
+            // 拖动把手：只有这里接受关闭手势，保证下面的选项行仍可正常点击。
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -162,7 +166,13 @@ fun BoxScope.BottomSheet(
     }
 }
 
-/** A centred dialog card that scales in with a light spring. */
+/**
+ * 居中显示的对话框卡片，带轻微弹簧的缩放进场。
+ *
+ * @param visible   是否显示
+ * @param onDismiss 请求关闭的回调
+ * @param content   卡片内容
+ */
 @Composable
 fun BoxScope.CenterDialog(
     visible: Boolean,
@@ -189,7 +199,7 @@ fun BoxScope.CenterDialog(
     }
 }
 
-/** The visual shell of a dialog: rounded surface, soft shadow, then content. */
+/** 对话框的视觉外壳：圆角表面、柔和投影，内部由调用方填充内容。 */
 @Composable
 fun DialogCard(content: @Composable ColumnScope.() -> Unit) {
     val colors = myPrinterColors
@@ -211,7 +221,7 @@ fun DialogCard(content: @Composable ColumnScope.() -> Unit) {
     )
 }
 
-/** Dialog title + message block, shared by the result and the configuration prompts. */
+/** 对话框的标题 + 正文，结果弹窗与配置提示共用。 */
 @Composable
 fun DialogMessage(title: String, message: String) {
     Text(
@@ -230,7 +240,7 @@ fun DialogMessage(title: String, message: String) {
     )
 }
 
-/** Two horizontal actions, primary on the right, matching the platform's dialog order. */
+/** 一行两个操作按钮，主操作在右，与系统对话框的按钮顺序一致。 */
 @Composable
 fun DialogActions(
     primaryLabel: String,
@@ -259,6 +269,7 @@ fun DialogActions(
     }
 }
 
+/** 对话框主操作按钮：品牌渐变 + 白色文字 + 触感反馈。 */
 @Composable
 private fun PrimaryActionButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val interaction = remember { MutableInteractionSource() }
@@ -291,6 +302,7 @@ private fun PrimaryActionButton(label: String, onClick: () -> Unit, modifier: Mo
     }
 }
 
+/** 对话框次要操作按钮：浅色填充 + 细描边。 */
 @Composable
 private fun TextActionButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = myPrinterColors
@@ -319,7 +331,7 @@ private fun TextActionButton(label: String, onClick: () -> Unit, modifier: Modif
     }
 }
 
-/** A soft circular badge that carries a status icon inside a dialog. */
+/** 对话框里的圆形状态徽章（成功 / 失败 / 警告）。 */
 @Composable
 fun StatusBadge(
     iconRes: Int,
@@ -348,7 +360,7 @@ fun StatusBadge(
     }
 }
 
-/** A leading tinted icon tile, used by the source options in the sheet. */
+/** 带品牌色调的方形图标底座，用于弹层里的来源选项。 */
 @Composable
 fun IconTile(
     iconRes: Int,

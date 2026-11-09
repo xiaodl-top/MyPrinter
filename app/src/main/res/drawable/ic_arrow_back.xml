@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Material "arrow_back" icon, used by the settings screen to return to the main screen. -->
+<!-- Material「arrow_back」图标：设置页返回上一页。 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"

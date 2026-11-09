@@ -18,7 +18,13 @@ import top.xiaodl.myprinter.R
 import top.xiaodl.myprinter.ui.brandGradient
 import top.xiaodl.myprinter.ui.myPrinterColors
 
-/** The app mark: the brand gradient tile with the white printer glyph. */
+/**
+ * 应用标识：品牌渐变的圆角方块 + 白色打印机字形。
+ *
+ * <p>首页标题栏与「关于」卡片共用同一个标识，保证应用内外视觉一致。
+ *
+ * @param size 边长
+ */
 @Composable
 fun LogoMark(size: Dp = 42.dp) {
     val colors = myPrinterColors
@@ -26,6 +32,7 @@ fun LogoMark(size: Dp = 42.dp) {
     Box(
         modifier = Modifier
             .size(size)
+            // 深色模式下彩色投影不可见，直接省略，靠渐变本身区分层次。
             .shadow(
                 elevation = if (colors.isDark) 0.dp else 12.dp,
                 shape = shape,

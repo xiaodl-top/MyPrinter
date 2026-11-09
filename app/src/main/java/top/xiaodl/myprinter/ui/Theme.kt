@@ -25,48 +25,51 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 
 /**
- * Design tokens for the whole app: a deep indigo→violet brand gradient with a teal accent, soft
- * elevated surfaces and a calm, high-contrast type scale.
+ * 全应用的设计令牌：深靛蓝 → 紫罗兰的品牌渐变、青绿点缀、柔和的层叠表面，以及克制的高对比字号。
  *
- * Both screens read these tokens (never raw hex values) so light and dark mode stay in sync.
+ * <p>界面只读取这里的语义色（不直接写十六进制），浅色与深色两套值因此能始终保持同步。
  */
 data class MyPrinterColors(
+    /** 是否深色模式。 */
     val isDark: Boolean,
-    // Brand gradient stops.
+    // —— 品牌渐变的三个色标 ——
     val brandStart: Color,
     val brandMid: Color,
     val brandEnd: Color,
-    // Accent used for secondary highlights.
+    // —— 次要高亮用的强调色 ——
     val accent: Color,
-    // Page + surfaces.
+    // —— 页面与卡片表面 ——
     val pageBackground: Color,
     val pageBackgroundAlt: Color,
     val surface: Color,
     val surfaceMuted: Color,
-    // Lines and borders.
+    // —— 分割线与描边 ——
     val border: Color,
     val borderStrong: Color,
     val divider: Color,
-    // Text.
+    // —— 文字 ——
     val textPrimary: Color,
     val textSecondary: Color,
     val textTertiary: Color,
     val hint: Color,
-    // Control fills.
+    // —— 控件填充色 ——
     val fieldFill: Color,
     val previewBackground: Color,
-    // Semantic.
+    // —— 语义色（成功 / 失败 / 警告）——
     val warningBackground: Color,
     val warningText: Color,
     val warningBorder: Color,
     val success: Color,
     val danger: Color,
+    /** 品牌色块上的前景色（通常是白色）。 */
     val onBrand: Color,
+    /** 弹层遮罩色。 */
     val scrim: Color,
-    // Ambient light blobs.
+    // —— 环境光晕颜色 ——
     val glowA: Color,
     val glowB: Color,
     val glowC: Color,
+    /** 投影着色，浅色模式下用于彩色阴影。 */
     val shadowTint: Color,
 )
 
@@ -258,10 +261,11 @@ private val AppShapes = Shapes(
     extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(32.dp),
 )
 
-/** The current palette; use the short accessors below inside composables. */
+/** 当前调色板；在 Composable 中通过下面的简写访问器读取。 */
 val myPrinterColors: MyPrinterColors
     @Composable get() = LocalMyPrinterColors.current
 
+// 常用颜色的简写访问器：只能在 @Composable 中使用，会自动随主题切换。
 val Primary: Color @Composable get() = myPrinterColors.brandStart
 val Accent: Color @Composable get() = myPrinterColors.accent
 val PageBackground: Color @Composable get() = myPrinterColors.pageBackground
@@ -283,7 +287,7 @@ val DangerColor: Color @Composable get() = myPrinterColors.danger
 val ScrimColor: Color @Composable get() = myPrinterColors.scrim
 val ShadowTint: Color @Composable get() = myPrinterColors.shadowTint
 
-/** The signature brand gradient: azure → indigo → violet. */
+/** 品牌标志性渐变：天蓝 → 靛蓝 → 紫罗兰。 */
 @Composable
 fun brandGradient(): Brush = Brush.linearGradient(
     colors = listOf(
@@ -293,7 +297,7 @@ fun brandGradient(): Brush = Brush.linearGradient(
     ),
 )
 
-/** A softer horizontal variant used behind titles and progress bars. */
+/** 水平方向的同色渐变，用于标题条与进度等横向元素。 */
 @Composable
 fun brandGradientHorizontal(): Brush = Brush.horizontalGradient(
     colors = listOf(
@@ -304,9 +308,13 @@ fun brandGradientHorizontal(): Brush = Brush.horizontalGradient(
 )
 
 /**
- * Installs the palette for the current [ThemeMode]. The mode is read from [AppTheme], so a change
- * made on the settings screen repaints the whole app immediately, and the system bar icon colour
- * is kept in sync through [SideEffect].
+ * 按当前 [ThemeMode] 安装调色板。
+ *
+ * <p>模式从 [AppTheme] 读取，因此在设置页切换后整个应用会立即重绘；
+ * 系统栏图标颜色通过 [SideEffect] 与当前深浅色保持同步。
+ *
+ * @param mode    配色模式，默认跟随全局状态
+ * @param content 页面内容
  */
 @Composable
 fun MyPrinterTheme(
@@ -334,6 +342,7 @@ fun MyPrinterTheme(
     }
 }
 
+/** 从任意 Context 向外找到宿主 Activity（用于设置系统栏外观）。 */
 private tailrec fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()

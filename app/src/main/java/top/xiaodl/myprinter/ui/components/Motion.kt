@@ -22,28 +22,38 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 /**
- * One place for the timing curves of the app. Everything that moves reads these tokens so the
- * whole UI feels like it runs on a single clock:
+ * 全局动效参数集中在这里，整个界面的运动都读同一套曲线，观感统一：
  *
- * * transitions use a decelerating ease-out curve (fast out of the finger, slow into place),
- * * presses settle with a lightly under-damped spring,
- * * entrances are staggered by [EntranceStagger] so screens unfold instead of appearing.
+ * <ul>
+ *   <li>转场使用先快后慢的减速曲线（离开手指快、落位慢）；</li>
+ *   <li>按压用轻微欠阻尼的弹簧收尾；</li>
+ *   <li>入场按 [EntranceStagger] 错峰，让页面「展开」而不是突然出现。</li>
+ * </ul>
  */
 object Motion {
+
+    /** 快速反馈时长（毫秒）。 */
     const val Fast = 170
+
+    /** 常规转场时长（毫秒）。 */
     const val Normal = 280
+
+    /** 较慢的转场时长（毫秒）。 */
     const val Slow = 460
 
-    /** Duration of one reveal (fade + rise). */
+    /** 单次入场动画时长（毫秒）。 */
     const val Entrance = 620
+
+    /** 相邻内容块入场的时间差（毫秒）。 */
     const val EntranceStagger = 70L
 
-    /** A decelerating curve: quick start, gentle landing. */
+    /** 减速曲线：起步快、落位柔和。 */
     val EaseOut: Easing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
 
-    /** Standard spatial movement (sheets, cards, content swaps). */
+    /** 标准缓入缓出曲线（弹层、内容切换）。 */
     val EaseInOut: Easing = CubicBezierEasing(0.4f, 0f, 0.2f, 1f)
 
+    /** 按压回弹：阻尼略低，松手时有一点点「弹」的感觉。 */
     fun <T> pressSpring(): androidx.compose.animation.core.SpringSpec<T> =
         spring(
             dampingRatio = 0.45f,
@@ -51,12 +61,14 @@ object Motion {
             visibilityThreshold = null,
         )
 
+    /** 常规收束：干净利落，不过冲。 */
     fun <T> settleSpring(): androidx.compose.animation.core.SpringSpec<T> =
         spring(
             dampingRatio = 0.82f,
             stiffness = 380f,
         )
 
+    /** 带轻微过冲的弹簧（开关滑块等）。 */
     fun <T> bouncySpring(): androidx.compose.animation.core.SpringSpec<T> =
         spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
@@ -65,8 +77,8 @@ object Motion {
 }
 
 /**
- * Scales the element down while it is pressed. Apply after [Modifier.clip] so the ripple stays
- * inside the shape, and give the same [interactionSource] to the clickable modifier.
+ * 按压时缩小元素。请放在 [Modifier.clip] 之前，并把同一个 [interactionSource] 传给 clickable，
+ * 这样按压缩放与水波纹能同步。
  */
 @Composable
 fun Modifier.pressScale(
@@ -86,8 +98,12 @@ fun Modifier.pressScale(
 }
 
 /**
- * Entrance animation: the content fades in while rising into place. [index] staggers several
- * blocks so a screen "assembles" itself top to bottom.
+ * 入场动画：内容淡入的同时向上归位。
+ *
+ * @param index    序号，用于错峰（每个序号延迟 [Motion.EntranceStagger] 毫秒）
+ * @param modifier 修饰符
+ * @param offsetY  起始的向下位移
+ * @param content  内容
  */
 @Composable
 fun Reveal(
@@ -108,6 +124,7 @@ fun Reveal(
     )
     Box(
         modifier.graphicsLayer {
+            // 位移在绘制阶段计算，不触发重组。
             alpha = progress
             translationY = (1f - progress) * offsetY.toPx()
         },

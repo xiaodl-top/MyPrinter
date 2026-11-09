@@ -20,11 +20,12 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 /**
- * The ambient backdrop shared by both screens: a soft page tint with two very large colour blobs
- * that drift slowly around the screen. The movement is deliberately slow (one full orbit takes
- * minutes) so it reads as light in a room rather than as an animation.
+ * 两个页面共用的环境背景：一层柔和的页面底色，加上两团极淡、缓慢漂移的彩色光晕。
  *
- * Only the draw phase is invalidated, so the rest of the screen never recomposes because of it.
+ * <p>移动刻意做得很慢（一圈几十秒），读起来像「房间里的光」而不是动画；
+ * 并且只在绘制阶段读取相位，不会引起任何重组。
+ *
+ * @param modifier 修饰符
  */
 @Composable
 fun AuroraBackdrop(modifier: Modifier = Modifier) {
@@ -41,6 +42,7 @@ fun AuroraBackdrop(modifier: Modifier = Modifier) {
     )
 
     Canvas(modifier = modifier.fillMaxSize()) {
+        // 基础底色：从上到下轻微渐变，制造纵深。
         drawRect(
             brush = Brush.verticalGradient(
                 0f to colors.pageBackgroundAlt,
@@ -53,13 +55,14 @@ fun AuroraBackdrop(modifier: Modifier = Modifier) {
         val h = size.height
         val longest = size.maxDimension
 
-        // Indigo light source, slowly orbiting the upper half of the screen.
+        // 靛蓝光源，在画面上半部分缓慢环绕。
         val ax = w * (0.18f + 0.22f * (0.5f + 0.5f * sin(phase)))
         val ay = h * (0.10f + 0.14f * (0.5f + 0.5f * cos(phase * 0.9f)))
         val aRadius = longest * 0.78f
         drawCircle(
             brush = Brush.radialGradient(
                 colors = listOf(
+                    // 深色模式需要更亮一点才看得出层次。
                     colors.glowA.copy(alpha = if (colors.isDark) 0.40f else 0.18f),
                     Color.Transparent,
                 ),
@@ -70,7 +73,7 @@ fun AuroraBackdrop(modifier: Modifier = Modifier) {
             center = Offset(ax, ay),
         )
 
-        // Teal counter-light in the lower right corner.
+        // 右下角的青色反向光，平衡画面重心。
         val bx = w * (1.05f - 0.26f * (0.5f + 0.5f * sin(phase + 2.1f)))
         val by = h * (0.62f + 0.16f * (0.5f + 0.5f * cos(phase + 1.2f)))
         val bRadius = longest * 0.66f

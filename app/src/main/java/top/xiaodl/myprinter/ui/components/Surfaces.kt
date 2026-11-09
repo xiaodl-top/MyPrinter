@@ -65,8 +65,17 @@ import top.xiaodl.myprinter.ui.brandGradient
 import top.xiaodl.myprinter.ui.myPrinterColors
 
 /**
- * A raised surface with a hairline border and a soft, brand-tinted shadow. In dark mode the shadow
- * is replaced by a brighter border, which is what "elevation" reads as on a dark canvas.
+ * 带细描边与柔和品牌投影的抬升表面。
+ *
+ * <p>深色模式下投影不可见，改用更亮的描边来表现层级——这正是「高度」在深色画布上的读法。
+ *
+ * @param modifier     修饰符
+ * @param shape        形状
+ * @param color        背景色
+ * @param borderColor  描边色
+ * @param elevation    投影高度（仅浅色生效）
+ * @param contentPadding 内边距
+ * @param content      内容
  */
 @Composable
 fun GlassCard(
@@ -97,8 +106,17 @@ fun GlassCard(
 }
 
 /**
- * The primary call to action: a brand-gradient pill that answers every touch with a spring scale,
- * a light haptic tick and a slow highlight that crosses the surface while it is enabled.
+ * 主操作按钮：品牌渐变的胶囊，按下时弹簧缩放并带一次轻触感反馈，
+ * 可用状态下还有一道缓慢扫过的高光。
+ *
+ * @param label        文案
+ * @param onClick      点击回调
+ * @param modifier     修饰符
+ * @param enabled      是否可用
+ * @param loading      是否处于加载中（显示进度圈与 [loadingLabel]）
+ * @param loadingLabel 加载中的文案
+ * @param iconRes      左侧图标（可选）
+ * @param shape        形状
  */
 @Composable
 fun GradientButton(
@@ -203,7 +221,13 @@ fun GradientButton(
     }
 }
 
-/** A highlight band that slowly crosses a surface, giving it a subtle "live" quality. */
+/**
+ * 缓慢扫过高光带，让表面有一点「活着」的质感。
+ *
+ * @param durationMillis 一次扫过的时长
+ * @param delayMillis    两次之间的间隔
+ * @param highlight      高光颜色
+ */
 @Composable
 fun BoxScope.ShineOverlay(
     durationMillis: Int = 3800,
@@ -242,7 +266,16 @@ fun BoxScope.ShineOverlay(
     }
 }
 
-/** A soft icon button used for the header actions (settings, back). */
+/**
+ * 标题栏里使用的柔和图标按钮（设置、返回）。
+ *
+ * @param iconRes            图标资源
+ * @param contentDescription 无障碍描述
+ * @param onClick            点击回调
+ * @param modifier           修饰符
+ * @param tint               图标颜色
+ * @param size               按钮边长
+ */
 @Composable
 fun SoftIconButton(
     iconRes: Int,
@@ -278,7 +311,13 @@ fun SoftIconButton(
     }
 }
 
-/** Small caption above a group of controls, with a leading gradient dash. */
+/**
+ * 一组控件上方的小标题，前面带一条渐变色短竖条。
+ *
+ * @param text     标题文字
+ * @param modifier 修饰符
+ * @param trailing 右侧附加内容（可选）
+ */
 @Composable
 fun SectionLabel(
     text: String,
@@ -310,7 +349,16 @@ fun SectionLabel(
     }
 }
 
-/** A pill-shaped metadata chip. */
+/**
+ * 胶囊形状的元信息标签。
+ *
+ * @param text        文字
+ * @param modifier    修饰符
+ * @param iconRes     左侧小图标（可选）
+ * @param tint        文字与图标颜色
+ * @param background  背景色
+ * @param borderColor 描边色
+ */
 @Composable
 fun MetaPill(
     text: String,
@@ -349,7 +397,7 @@ fun MetaPill(
     }
 }
 
-/** One-pixel separator that never looks heavy. */
+/** 1dp 极细分割线，不喧宾夺主。 */
 @Composable
 fun Hairline(modifier: Modifier = Modifier, color: Color = DividerColor) {
     Box(
@@ -360,9 +408,9 @@ fun Hairline(modifier: Modifier = Modifier, color: Color = DividerColor) {
 }
 
 /**
- * The empty state before a file is chosen. A clean hairline card with a soft brand glow behind
- * the gently breathing icon 鈥?no dashed outline, so it reads as a calm placeholder rather than a
- * drop target.
+ * 选择文件之前的空状态：干净的细描边卡片，图标背后一层柔和的品牌光晕。
+ *
+ * <p>刻意不画虚线框——它更像一个安静的占位，而不是「拖放目标」。
  */
 @Composable
 fun EmptyStatePanel(
@@ -390,7 +438,7 @@ fun EmptyStatePanel(
             .border(1.dp, colors.border, shape),
         contentAlignment = Alignment.Center,
     ) {
-        // A soft light behind the icon; it fades out well before the card edges.
+        // 图标背后的柔光：在到达卡片边缘之前就完全淡出。
         Canvas(Modifier.matchParentSize()) {
             val center = Offset(size.width / 2f, size.height * 0.36f)
             val radius = size.width * 0.36f

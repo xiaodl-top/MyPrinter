@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Night variant of the app theme: dark system bar icons are not readable on a dark page. -->
+<!-- 深色主题变体：深色页面上需要浅色系统栏图标才可读。 -->
 <resources>
     <style name="Theme.MyPrinter" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
