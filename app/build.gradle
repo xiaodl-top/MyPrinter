@@ -4,16 +4,51 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose'
 }
 
+// ---------------------------------------------------------------------------
+// Machine-local secrets
+//
+// The print service URL, printer name and access code are deliberately NOT in
+// this repository. They are read at build time from (in order):
+//   1. a Gradle property:   -PDEFAULT_API_URL=...  or  ~/.gradle/gradle.properties
+//   2. local.properties     (already git-ignored; see local.properties.example)
+//   3. the process environment variable of the same name
+// and baked into BuildConfig. When a value is missing it becomes an empty
+// string, so the app still builds and simply asks the user to fill in settings.
+// ---------------------------------------------------------------------------
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+
+def secretDefault = { String key ->
+    def value = project.findProperty(key) ?: localProperties.getProperty(key) ?: System.getenv(key) ?: ''
+    // Escape the value for the generated Java string literal.
+    value.replace('\\', '\\\\').replace('"', '\\"')
+}
+
+if (!project.findProperty('DEFAULT_API_URL')
+        && !localProperties.getProperty('DEFAULT_API_URL')
+        && !System.getenv('DEFAULT_API_URL')) {
+    logger.warn('MyPrinter: DEFAULT_API_URL is not configured. The app will start with an ' +
+            'empty print service URL; set it in local.properties (see local.properties.example).')
+}
+
 android {
-    namespace 'com.yshaw.myprinter'
+    namespace 'top.xiaodl.myprinter'
     compileSdk 35
 
     defaultConfig {
-        applicationId 'com.yshaw.myprinter'
+        applicationId 'top.xiaodl.myprinter'
         minSdk 24
         targetSdk 35
         versionCode 2
         versionName 'v1.1'
+
+        // Sensitive defaults, injected from local.properties / environment at build time.
+        buildConfigField "String", "DEFAULT_API_URL", "\"${secretDefault('DEFAULT_API_URL')}\""
+        buildConfigField "String", "DEFAULT_PRINTER", "\"${secretDefault('DEFAULT_PRINTER')}\""
+        buildConfigField "String", "DEFAULT_CODE", "\"${secretDefault('DEFAULT_CODE')}\""
     }
 
     signingConfigs {

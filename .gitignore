@@ -6,3 +6,5 @@ build/
 app/build/
 local.properties
 *.iml
+# Local preview images contain the private print-service settings.
+screenshots/

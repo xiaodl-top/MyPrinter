@@ -24,7 +24,7 @@
 
         <provider
             android:name=".CameraFileProvider"
-            android:authorities="com.yshaw.myprinter.camera-fileprovider"
+            android:authorities="${applicationId}.camera-fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <grant-uri-permission android:pathPrefix="/camera/" />
