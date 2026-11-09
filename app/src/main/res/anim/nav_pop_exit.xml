@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings leaves to the right, the reverse of its entrance. -->
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/fast_out_linear_in">
+    <translate
+        android:duration="240"
+        android:fromXDelta="0"
+        android:toXDelta="14%p" />
+    <alpha
+        android:duration="200"
+        android:fromAlpha="1"
+        android:toAlpha="0" />
+</set>

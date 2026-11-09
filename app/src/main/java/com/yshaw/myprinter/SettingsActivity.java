@@ -1,5 +1,7 @@
 package com.yshaw.myprinter;
 
+import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -15,6 +17,7 @@ public final class SettingsActivity extends ComponentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ComposeBridgeKt.configureSystemBars(this);
+        configureNavTransitions();
         AppLog.user("打开设置页");
 
         ActivitySettingsBinding binding = ActivitySettingsBinding.inflate(getLayoutInflater());
@@ -37,5 +40,30 @@ public final class SettingsActivity extends ComponentActivity {
                     setResult(RESULT_OK);
                     finish();
                 });
+    }
+
+    /**
+     * Android 14+ plays the slide transitions declared here; older releases read the same
+     * animations through {@link #finish()} and {@link MainActivity}.
+     */
+    private void configureNavTransitions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overrideActivityTransition(
+                    Activity.OVERRIDE_TRANSITION_OPEN,
+                    R.anim.nav_enter,
+                    R.anim.nav_exit);
+            overrideActivityTransition(
+                    Activity.OVERRIDE_TRANSITION_CLOSE,
+                    R.anim.nav_pop_enter,
+                    R.anim.nav_pop_exit);
+        }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overridePendingTransition(R.anim.nav_pop_enter, R.anim.nav_pop_exit);
+        }
     }
 }

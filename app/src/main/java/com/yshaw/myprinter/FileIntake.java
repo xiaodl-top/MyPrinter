@@ -1,5 +1,6 @@
 package com.yshaw.myprinter;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -65,6 +66,7 @@ public final class FileIntake {
     }
 
     /** Persists the read grant when the sender allows it; silently ignored otherwise. */
+    @SuppressLint("WrongConstant")
     public static void persistReadPermission(Context context, Intent intent, Uri uri) {
         int flags = intent == null
                 ? Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -242,6 +244,8 @@ public final class FileIntake {
         return value.substring(dot + 1).toLowerCase(Locale.ROOT);
     }
 
+    /** Only call this on API 29+, where the thumbnail API exists. */
+    @RequiresApi(Build.VERSION_CODES.Q)
     private static Bitmap thumbnailOrNull(Context context, Uri uri) {
         try {
             return context.getContentResolver().loadThumbnail(

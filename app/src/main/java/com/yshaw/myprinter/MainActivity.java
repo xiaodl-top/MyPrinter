@@ -1,6 +1,7 @@
 package com.yshaw.myprinter;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.activity.ComponentActivity;
@@ -35,6 +36,10 @@ public final class MainActivity extends ComponentActivity {
         ComposeBridgeKt.showPrintScreen(binding.printComposeView, viewModel, () -> {
             AppLog.user("点击设置按钮");
             startActivity(new Intent(this, SettingsActivity.class));
+            // Android 14+ takes the transition from SettingsActivity itself.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                overridePendingTransition(R.anim.nav_enter, R.anim.nav_exit);
+            }
         });
 
         if (savedInstanceState == null) {

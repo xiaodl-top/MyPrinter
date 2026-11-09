@@ -6,6 +6,8 @@
         <item name="android:statusBarColor">@color/page_background</item>
         <item name="android:navigationBarColor">@color/surface</item>
         <item name="android:colorAccent">@color/primary</item>
+        <!-- Branded background behind the first frame, so launching never flashes white. -->
+        <item name="android:windowBackground">@color/page_background</item>
     </style>
 </resources>
 

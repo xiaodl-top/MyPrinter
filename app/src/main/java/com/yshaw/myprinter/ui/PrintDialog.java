@@ -3,10 +3,14 @@ package com.yshaw.myprinter.ui;
 /** Dialog the print screen may show; keeps the strings out of the composable. */
 public final class PrintDialog {
     public enum Kind {
-        /** Plain information or a result message. */
+        /** Plain information message. */
         INFO,
         /** The print configuration is incomplete, offer to open the settings. */
         NEED_CONFIG,
+        /** The print service accepted the request. */
+        SUCCESS,
+        /** The print service rejected the request or the upload failed. */
+        ERROR,
     }
 
     private final Kind kind;
@@ -25,6 +29,14 @@ public final class PrintDialog {
 
     public static PrintDialog needConfig(String title, String message) {
         return new PrintDialog(Kind.NEED_CONFIG, title, message);
+    }
+
+    public static PrintDialog success(String title, String message) {
+        return new PrintDialog(Kind.SUCCESS, title, message);
+    }
+
+    public static PrintDialog error(String title, String message) {
+        return new PrintDialog(Kind.ERROR, title, message);
     }
 
     public Kind getKind() {

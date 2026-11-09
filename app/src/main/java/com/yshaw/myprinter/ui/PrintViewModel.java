@@ -174,11 +174,11 @@ public final class PrintViewModel extends AndroidViewModel {
                     if (reply.isSuccess()) {
                         AppLog.user("打印请求成功",
                                 "耗时=" + elapsed + "ms, 服务端消息=" + reply.getMessage());
-                        dialog.setValue(PrintDialog.info("打印请求已发送", reply.getMessage()));
+                        dialog.setValue(PrintDialog.success("打印请求已发送", reply.getMessage()));
                     } else {
                         AppLog.warn("打印请求被服务端拒绝",
                                 "耗时=" + elapsed + "ms, 服务端消息=" + reply.getMessage());
-                        dialog.setValue(PrintDialog.info("打印失败", reply.getMessage()));
+                        dialog.setValue(PrintDialog.error("打印失败", reply.getMessage()));
                     }
                 });
             } catch (Exception error) {
@@ -191,7 +191,7 @@ public final class PrintViewModel extends AndroidViewModel {
                         : message;
                 mainHandler.post(() -> {
                     printing.setValue(false);
-                    dialog.setValue(PrintDialog.info("打印请求失败", text));
+                    dialog.setValue(PrintDialog.error("打印请求失败", text));
                 });
             }
         });
