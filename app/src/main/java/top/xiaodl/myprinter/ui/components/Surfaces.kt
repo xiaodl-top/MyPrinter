@@ -41,13 +41,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -363,11 +360,12 @@ fun Hairline(modifier: Modifier = Modifier, color: Color = DividerColor) {
 }
 
 /**
- * The empty state before a file is chosen: a dashed outline with a gently breathing icon, so the
- * page never looks like something is missing.
+ * The empty state before a file is chosen. A clean hairline card with a soft brand glow behind
+ * the gently breathing icon 鈥?no dashed outline, so it reads as a calm placeholder rather than a
+ * drop target.
  */
 @Composable
-fun DashedEmptyPanel(
+fun EmptyStatePanel(
     title: String,
     subtitle: String,
     iconRes: Int,
@@ -392,23 +390,21 @@ fun DashedEmptyPanel(
             .border(1.dp, colors.border, shape),
         contentAlignment = Alignment.Center,
     ) {
+        // A soft light behind the icon; it fades out well before the card edges.
         Canvas(Modifier.matchParentSize()) {
-            val stroke = 1.4.dp.toPx()
-            drawRoundRect(
-                color = colors.brandMid.copy(alpha = if (colors.isDark) 0.55f else 0.30f),
-                topLeft = Offset(stroke / 2f, stroke / 2f),
-                size = androidx.compose.ui.geometry.Size(
-                    size.width - stroke,
-                    size.height - stroke,
-                ),
-                cornerRadius = CornerRadius(26.dp.toPx()),
-                style = Stroke(
-                    width = stroke,
-                    pathEffect = PathEffect.dashPathEffect(
-                        floatArrayOf(12.dp.toPx(), 9.dp.toPx()),
-                        0f,
+            val center = Offset(size.width / 2f, size.height * 0.36f)
+            val radius = size.width * 0.36f
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        colors.brandMid.copy(alpha = if (colors.isDark) 0.16f else 0.10f),
+                        Color.Transparent,
                     ),
+                    center = center,
+                    radius = radius,
                 ),
+                radius = radius,
+                center = center,
             )
         }
         Column(

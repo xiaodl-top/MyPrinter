@@ -1,6 +1,5 @@
 package top.xiaodl.myprinter.ui
 
-import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.MutableState
@@ -18,15 +17,34 @@ import androidx.core.view.WindowCompat
 /** Java-friendly `mutableStateOf`. */
 fun <T> composeState(value: T): MutableState<T> = mutableStateOf(value)
 
-fun ComposeView.showPrintScreen(viewModel: PrintViewModel, onOpenSettings: Runnable) {
+fun ComposeView.showPrintScreen(
+    viewModel: PrintViewModel,
+    onOpenAppSettings: Runnable,
+    onOpenPrintSettings: Runnable,
+) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         MyPrinterTheme {
-            PrintScreen(viewModel = viewModel, onOpenSettings = { onOpenSettings.run() })
+            PrintScreen(
+                viewModel = viewModel,
+                onOpenAppSettings = { onOpenAppSettings.run() },
+                onOpenPrintSettings = { onOpenPrintSettings.run() },
+            )
         }
     }
 }
 
+/** App-wide preferences: appearance and about. */
+fun ComposeView.showAppSettingsScreen(onBack: Runnable) {
+    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+    setContent {
+        MyPrinterTheme {
+            AppSettingsScreen(onBack = { onBack.run() })
+        }
+    }
+}
+
+/** Printer connection settings, opened from the printer card on the home screen. */
 fun ComposeView.showSettingsScreen(onBack: Runnable, onSave: SettingsSaveListener) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -42,12 +60,13 @@ fun ComposeView.showSettingsScreen(onBack: Runnable, onSave: SettingsSaveListene
 }
 
 /**
- * Edge-to-edge system bars whose icons follow the system night mode, just like the UI palette does.
+ * Edge-to-edge system bars. The icon colour follows the app's own palette (light / dark / system
+ * from [AppTheme]), not just the system night mode, so a forced theme also gets readable bars.
  */
 fun configureSystemBars(activity: ComponentActivity) {
+    AppTheme.init(activity)
     activity.enableEdgeToEdge()
-    val dark = (activity.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
-        Configuration.UI_MODE_NIGHT_YES
+    val dark = AppTheme.mode.value.isDark(AppTheme.systemIsDark(activity))
     val controller = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
     controller.isAppearanceLightStatusBars = !dark
     controller.isAppearanceLightNavigationBars = !dark

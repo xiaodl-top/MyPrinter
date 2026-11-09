@@ -6,7 +6,7 @@ OnePrinter 云打印服务的 Android 客户端。选一张图片或一份文档
 | | |
 |---|---|
 | 应用 ID / 包名 | `top.xiaodl.myprinter` |
-| 版本 | v1.1（versionCode 2） |
+| 版本 | v2.0（versionCode 3） |
 | 最低系统 | Android 7.0（API 24） |
 | 目标系统 | Android 15（API 35） |
 | 技术栈 | Kotlin + Jetpack Compose（Material 3），少量 Java（Activity、网络与文件层） |
@@ -43,7 +43,22 @@ OnePrinter 云打印服务的 Android 客户端。选一张图片或一份文档
 | 纸张大小 | 如 `A4` |
 | 彩色打印 | 关闭时 `color=0` |
 
-配置缺失（API / 打印机名称 / 纸张为空）时点击打印会提示并引导前往设置页。
+配置缺失（API / 打印机名称 / 纸张为空）时点击打印会提示并引导前往打印设置页。
+
+### 设置入口
+
+应用有**两个独立设置页**，彼此不混在一起：
+
+| 入口 | 页面 | 内容 |
+| --- | --- | --- |
+| 主页右上角 **齿轮** | 设置 | 外观（主题模式）、关于（应用名称、版本号、简介） |
+| 主页打印机卡片右上角 **修改** | 打印设置 | 打印服务 API、验证口令、打印机名称、纸张大小、彩色打印、保存 |
+
+### 外观
+
+- **主题模式**：`跟随系统`（默认）/ `浅色` / `深色`，在「设置」页切换，**立即生效且无需保存**。
+- 切换会同时更新界面配色与状态栏 / 导航栏图标颜色，并同步到主页。
+- 选择保存在本机 `SharedPreferences`（`oneprinter_ui` / `theme_mode`），重启后保持。
 
 ---
 
@@ -67,8 +82,8 @@ OnePrinter 云打印服务的 Android 客户端。选一张图片或一份文档
 产物路径（文件名带版本与构建时间）：
 
 ```
-app/build/outputs/apk/debug/MyPrinter-v1.1-2-debug-<yyyyMMddHHmm>.apk
-app/build/outputs/apk/release/MyPrinter-v1.1-2-release-<yyyyMMddHHmm>.apk
+app/build/outputs/apk/debug/MyPrinter-v2.0-3-debug-<yyyyMMddHHmm>.apk
+app/build/outputs/apk/release/MyPrinter-v2.0-3-release-<yyyyMMddHHmm>.apk
 ```
 
 ### 私有默认值（不提交）
@@ -102,7 +117,7 @@ app/build/generated/source/buildConfig/debug/top/xiaodl/myprinter/BuildConfig.ja
 安装与启动：
 
 ```bash
-adb install -r app/build/outputs/apk/debug/MyPrinter-v1.1-2-debug-*.apk
+adb install -r app/build/outputs/apk/debug/MyPrinter-v2.0-3-debug-*.apk
 adb shell am start -n top.xiaodl.myprinter/.MainActivity
 ```
 
@@ -144,6 +159,8 @@ adb logcat -s MyPrinter
 使用 `SharedPreferences`（文件名 `oneprinter_settings`）保存在本机，键名：
 `api_url`、`printer`、`paper_size`、`code`、`color`（`1` / `0`）。
 
+外观偏好单独存放在 `oneprinter_ui` 中：`theme_mode` = `SYSTEM` / `LIGHT` / `DARK`（缺省为 `SYSTEM`）。
+
 其中的初始默认值来自 [`ConfigStore.java`](app/src/main/java/top/xiaodl/myprinter/ConfigStore.java)：
 服务地址、打印机名称、验证口令三项由构建期注入的 `BuildConfig` 提供（见「私有默认值（不提交）」），
 纸张大小固定为 `A4`。首次安装后可在设置页修改，修改结果只保存到本机。
@@ -157,7 +174,9 @@ app/src/main/
 ├── AndroidManifest.xml             权限、入口 Activity、外部文件 Intent 过滤器、相机 <queries>
 ├── java/top/xiaodl/myprinter/
 │   ├── MainActivity.java           入口：接收/选择文件，承载主界面
-│   ├── SettingsActivity.java       设置页宿主，负责保存与页面转场
+│   ├── AppSettingsActivity.java    设置页宿主：外观 + 关于（首页齿轮进入）
+│   ├── SettingsActivity.java       打印设置页宿主：连接参数（首页打印机卡片进入）
+│   ├── NavTransitions.java         两个设置页共用的转场
 │   ├── PrintApi.java               OkHttp multipart 上传与响应解析
 │   ├── FileIntake.java             Intent/URI 解析、文件名、预览解码、相机输出
 │   ├── ConfigStore.java            配置读写
@@ -169,16 +188,19 @@ app/src/main/
 │   └── ui/
 │       ├── ComposeBridge.kt        Java ↔ Compose 的桥接（状态、页面、系统栏）
 │       ├── Theme.kt                设计令牌：配色、字体、形状、品牌渐变
+│       ├── ThemeMode.kt            主题模式 + 应用级外观状态
 │       ├── PrintScreen.kt          主界面
-│       ├── SettingsScreen.kt       设置界面
+│       ├── AppSettingsScreen.kt    设置界面（外观 / 关于）
+│       ├── SettingsScreen.kt       打印设置界面
 │       ├── PrintViewModel.java     打印页状态 + 上传任务
 │       ├── PrintDialog.java        弹窗模型（信息 / 未配置 / 成功 / 失败）
 │       ├── PrintSelection.java     待打印文件
 │       ├── SettingsSaveListener.java
-│       └── components/             设计系统：动效、背景、卡片、输入、弹层、标题栏
+│       └── components/             设计系统：动效、背景、卡片、输入、弹层、标题栏、分段控件
 └── res/
     ├── anim/                       设置页进入/退出转场
     ├── drawable/                   矢量图标 + 自适应图标图层
+    ├── layout/                     两个设置页的 ComposeView 宿主
     ├── mipmap-*/                   旧版启动图标（WebP，API 24/25）
     └── values*/                    主题、颜色、字符串（浅色 / 深色）
 ```
@@ -200,7 +222,7 @@ app/src/main/
   - 底部弹层滑入、可下拉关闭；弹窗缩放进场；
   - 主页与设置页之间的滑动 + 淡入淡出窗口转场（Android 14+ 使用
     `overrideActivityTransition`，更低版本回退到 `overridePendingTransition`）。
-- **系统栏**：全面屏（edge-to-edge），图标颜色跟随深浅色主题。
+- **系统栏**：全面屏（edge-to-edge），图标颜色跟随**应用当前调色板**（包括强制浅色 / 深色），而不是只看系统夜间模式。
 
 ---
 
@@ -227,7 +249,7 @@ python tools/generate_icons.py
 
 ## 版本
 
-| 版本 | 说明 |
-| --- | --- |
-| v1.1 | 应用 ID 迁移为 `top.xiaodl.myprinter`；UI 全量重绘（新设计系统、动效、深浅色）；新应用图标 |
+| 版本   | 说明 |
+|------| --- |
+| v2.0 | 应用 ID 迁移为 `top.xiaodl.myprinter`；UI 全量重绘（新设计系统、动效、深浅色）；新增浅色 / 深色 / 跟随系统切换；设置拆分为「设置（外观 / 关于）」与「打印设置」两个页面；新应用图标 |
 | v1.0 | 首个版本：图片/文档打印、配置管理、外部文件接收 |

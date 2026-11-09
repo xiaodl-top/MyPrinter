@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -75,6 +76,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -90,7 +92,7 @@ import top.xiaodl.myprinter.ui.components.AppTextField
 import top.xiaodl.myprinter.ui.components.AuroraBackdrop
 import top.xiaodl.myprinter.ui.components.BottomSheet
 import top.xiaodl.myprinter.ui.components.CenterDialog
-import top.xiaodl.myprinter.ui.components.DashedEmptyPanel
+import top.xiaodl.myprinter.ui.components.EmptyStatePanel
 import top.xiaodl.myprinter.ui.components.DialogActions
 import top.xiaodl.myprinter.ui.components.DialogMessage
 import top.xiaodl.myprinter.ui.components.FieldLabel
@@ -98,6 +100,7 @@ import top.xiaodl.myprinter.ui.components.GlassCard
 import top.xiaodl.myprinter.ui.components.GradientButton
 import top.xiaodl.myprinter.ui.components.Hairline
 import top.xiaodl.myprinter.ui.components.IconTile
+import top.xiaodl.myprinter.ui.components.LogoMark
 import top.xiaodl.myprinter.ui.components.MetaPill
 import top.xiaodl.myprinter.ui.components.Motion
 import top.xiaodl.myprinter.ui.components.PageHeader
@@ -127,7 +130,8 @@ private const val SUPPORTED_FORMATS =
 @Composable
 fun PrintScreen(
     viewModel: PrintViewModel,
-    onOpenSettings: () -> Unit,
+    onOpenAppSettings: () -> Unit,
+    onOpenPrintSettings: () -> Unit,
 ) {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
@@ -206,7 +210,10 @@ fun PrintScreen(
                     .padding(top = topInset + 84.dp, bottom = bottomInset + 132.dp),
             ) {
                 Reveal(index = 0) {
-                    ConfigHero(config = viewModel.config.value, onOpenSettings = onOpenSettings)
+                    ConfigHero(
+                        config = viewModel.config.value,
+                        onOpenPrintSettings = onOpenPrintSettings,
+                    )
                 }
 
                 Spacer(Modifier.height(26.dp))
@@ -274,7 +281,7 @@ fun PrintScreen(
                         label = "selection",
                     ) { current ->
                         if (current == null) {
-                            DashedEmptyPanel(
+                            EmptyStatePanel(
                                 title = "还没有待打印的文件",
                                 subtitle = "从相册、相机或文件管理器里选一个文件，\n接着就能设置份数和版式。",
                                 iconRes = R.drawable.ic_print,
@@ -303,7 +310,7 @@ fun PrintScreen(
 
         HeaderBar(
             progress = { headerProgress.value },
-            onOpenSettings = onOpenSettings,
+            onOpenAppSettings = onOpenAppSettings,
             modifier = Modifier.align(Alignment.TopCenter),
         )
 
@@ -392,10 +399,10 @@ fun PrintScreen(
                 PrintDialogBody(
                     dialog = shown,
                     onDismiss = viewModel::dismissDialog,
-                    onOpenSettings = {
-                        AppLog.user("打印配置未完成，前往设置页")
+                    onOpenPrintSettings = {
+                        AppLog.user("打印配置未完成，前往打印设置页")
                         viewModel.dismissDialog()
-                        onOpenSettings()
+                        onOpenPrintSettings()
                     },
                 )
             }
@@ -408,7 +415,7 @@ fun PrintScreen(
 private fun PrintDialogBody(
     dialog: PrintDialog,
     onDismiss: () -> Unit,
-    onOpenSettings: () -> Unit,
+    onOpenPrintSettings: () -> Unit,
 ) {
     val iconRes = when (dialog.kind) {
         PrintDialog.Kind.NEED_CONFIG -> R.drawable.ic_warning
@@ -428,7 +435,7 @@ private fun PrintDialogBody(
     if (dialog.kind == PrintDialog.Kind.NEED_CONFIG) {
         DialogActions(
             primaryLabel = "去设置",
-            onPrimary = onOpenSettings,
+            onPrimary = onOpenPrintSettings,
             secondaryLabel = "取消",
             onSecondary = {
                 AppLog.user("取消前往设置")
@@ -493,11 +500,11 @@ private fun ImageSourceOption(
     }
 }
 
-/** Header: logo mark, wordmark and the settings entry. */
+/** Header: logo mark, wordmark and the app settings entry. */
 @Composable
 private fun HeaderBar(
     progress: () -> Float,
-    onOpenSettings: () -> Unit,
+    onOpenAppSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PageHeader(
@@ -509,50 +516,24 @@ private fun HeaderBar(
         trailing = {
             SoftIconButton(
                 iconRes = R.drawable.ic_settings,
-                contentDescription = "打开打印设置",
-                onClick = onOpenSettings,
+                contentDescription = "打开设置",
+                onClick = onOpenAppSettings,
             )
         },
     )
 }
 
+/** Hero card: the configured printer at a glance; tapping it opens the print settings screen. */
 @Composable
-private fun LogoMark(size: androidx.compose.ui.unit.Dp = 42.dp) {
-    val colors = myPrinterColors
-    val shape = RoundedCornerShape(size / 3.1f)
-    Box(
-        modifier = Modifier
-            .size(size)
-            .shadow(
-                elevation = if (colors.isDark) 0.dp else 12.dp,
-                shape = shape,
-                ambientColor = colors.brandStart.copy(alpha = 0.40f),
-                spotColor = colors.brandEnd.copy(alpha = 0.35f),
-            )
-            .clip(shape)
-            .background(brandGradient()),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_print),
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(size * 0.50f),
-        )
-    }
-}
-
-/** Hero card: the configured printer at a glance; tapping it opens the settings screen. */
-@Composable
-private fun ConfigHero(config: PrinterConfig, onOpenSettings: () -> Unit) {
+private fun ConfigHero(config: PrinterConfig, onOpenPrintSettings: () -> Unit) {
     val colors = myPrinterColors
     val shape = RoundedCornerShape(30.dp)
-    val interaction = remember { MutableInteractionSource() }
+    val editInteraction = remember { MutableInteractionSource() }
+    val editShape = RoundedCornerShape(50)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .pressScale(interaction, pressedScale = 0.985f)
             .shadow(
                 elevation = if (colors.isDark) 0.dp else 26.dp,
                 shape = shape,
@@ -560,12 +541,7 @@ private fun ConfigHero(config: PrinterConfig, onOpenSettings: () -> Unit) {
                 spotColor = colors.brandEnd.copy(alpha = 0.40f),
             )
             .clip(shape)
-            .background(brandGradient())
-            .clickable(
-                interactionSource = interaction,
-                indication = ripple(color = Color.White),
-                onClick = onOpenSettings,
-            ),
+            .background(brandGradient()),
     ) {
         // Decorative light: two translucent discs give the flat gradient some depth.
         Box(
@@ -610,27 +586,43 @@ private fun ConfigHero(config: PrinterConfig, onOpenSettings: () -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Spacer(Modifier.width(12.dp))
-                Row(
+                Spacer(Modifier.width(10.dp))
+                // Only this button opens the print settings; the card itself is not a target.
+                // The touch area stays a comfortable 48dp while the visible chip keeps its
+                // original compact size.
+                Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(Color.White.copy(alpha = 0.16f))
-                        .border(1.dp, Color.White.copy(alpha = 0.22f), RoundedCornerShape(50))
-                        .padding(start = 12.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                        .pressScale(editInteraction, pressedScale = 0.94f)
+                        .clickable(
+                            interactionSource = editInteraction,
+                            indication = null,
+                            role = Role.Button,
+                            onClick = onOpenPrintSettings,
+                        ),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = "修改",
-                        fontSize = 11.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_chevron_right),
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.9f),
-                        modifier = Modifier.size(14.dp),
-                    )
+                    Row(
+                        modifier = Modifier
+                            .clip(editShape)
+                            .background(Color.White.copy(alpha = 0.16f))
+                            .border(1.dp, Color.White.copy(alpha = 0.22f), editShape)
+                            .padding(start = 12.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "修改",
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White,
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_chevron_right),
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.9f),
+                            modifier = Modifier.size(14.dp),
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(16.dp))

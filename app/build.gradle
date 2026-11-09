@@ -42,8 +42,8 @@ android {
         applicationId 'top.xiaodl.myprinter'
         minSdk 24
         targetSdk 35
-        versionCode 2
-        versionName 'v1.1'
+        versionCode 3
+        versionName 'v2.0'
 
         // Sensitive defaults, injected from local.properties / environment at build time.
         buildConfigField "String", "DEFAULT_API_URL", "\"${secretDefault('DEFAULT_API_URL')}\""

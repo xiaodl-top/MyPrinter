@@ -33,14 +33,17 @@ public final class MainActivity extends ComponentActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         viewModel = new ViewModelProvider(this).get(PrintViewModel.class);
-        ComposeBridgeKt.showPrintScreen(binding.printComposeView, viewModel, () -> {
-            AppLog.user("点击设置按钮");
-            startActivity(new Intent(this, SettingsActivity.class));
-            // Android 14+ takes the transition from SettingsActivity itself.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                overridePendingTransition(R.anim.nav_enter, R.anim.nav_exit);
-            }
-        });
+        ComposeBridgeKt.showPrintScreen(
+                binding.printComposeView,
+                viewModel,
+                () -> {
+                    AppLog.user("点击设置按钮");
+                    open(AppSettingsActivity.class);
+                },
+                () -> {
+                    AppLog.user("点击修改打印配置");
+                    open(SettingsActivity.class);
+                });
 
         if (savedInstanceState == null) {
             consumeIncomingFile(getIntent());
@@ -52,6 +55,15 @@ public final class MainActivity extends ComponentActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         consumeIncomingFile(intent);
+    }
+
+    /** Starts one of the settings screens with the shared slide transition. */
+    private void open(Class<? extends ComponentActivity> target) {
+        startActivity(new Intent(this, target));
+        // Android 14+ takes the animation from the activity being opened.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            overridePendingTransition(R.anim.nav_enter, R.anim.nav_exit);
+        }
     }
 
     @Override

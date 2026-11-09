@@ -30,6 +30,13 @@
             <grant-uri-permission android:pathPrefix="/camera/" />
         </provider>
 
+        <!-- App-wide preferences (appearance, about), opened from the gear on the home screen. -->
+        <activity
+            android:name=".AppSettingsActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Printer connection settings, opened from the printer card on the home screen. -->
         <activity
             android:name=".SettingsActivity"
             android:exported="false"

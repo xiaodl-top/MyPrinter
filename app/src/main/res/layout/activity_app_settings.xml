@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    ViewBinding host for the app preferences screen (appearance and about); the Compose UI is
+    attached to the ComposeView below through ActivityAppSettingsBinding.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/appSettingsComposeView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>

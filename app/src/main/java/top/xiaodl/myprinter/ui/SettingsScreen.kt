@@ -40,7 +40,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,7 +48,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import top.xiaodl.myprinter.BuildConfig
 import top.xiaodl.myprinter.ConfigStore
 import top.xiaodl.myprinter.R
 import top.xiaodl.myprinter.ui.components.AppTextField
@@ -217,10 +215,6 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-
-                Spacer(Modifier.height(26.dp))
-
-                Reveal(index = 5) { VersionInfo() }
             }
         }
 
@@ -271,33 +265,3 @@ private fun WarningBanner() {
     }
 }
 
-/** Shows the installed version name and version code, e.g. "v1.1 (2)". */
-@Composable
-private fun VersionInfo() {
-    val colors = myPrinterColors
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(width = 28.dp, height = 3.dp)
-                .clip(RoundedCornerShape(50))
-                .background(brandGradient()),
-        )
-        Spacer(Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.app_name),
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = colors.textSecondary,
-        )
-        Spacer(Modifier.height(3.dp))
-        Text(
-            text = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-            fontSize = 11.sp,
-            letterSpacing = 0.3.sp,
-            color = TextTertiary,
-        )
-    }
-}

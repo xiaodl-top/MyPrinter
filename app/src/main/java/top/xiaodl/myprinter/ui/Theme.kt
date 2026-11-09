@@ -1,5 +1,8 @@
 package top.xiaodl.myprinter.ui
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -8,14 +11,18 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 
 /**
  * Design tokens for the whole app: a deep indigo→violet brand gradient with a teal accent, soft
@@ -296,10 +303,27 @@ fun brandGradientHorizontal(): Brush = Brush.horizontalGradient(
     ),
 )
 
+/**
+ * Installs the palette for the current [ThemeMode]. The mode is read from [AppTheme], so a change
+ * made on the settings screen repaints the whole app immediately, and the system bar icon colour
+ * is kept in sync through [SideEffect].
+ */
 @Composable
-fun MyPrinterTheme(content: @Composable () -> Unit) {
-    val isDark = isSystemInDarkTheme()
+fun MyPrinterTheme(
+    mode: ThemeMode = AppTheme.mode.value,
+    content: @Composable () -> Unit,
+) {
+    val isDark = mode.isDark(isSystemInDarkTheme())
     val colors = if (isDark) DarkColors else LightColors
+    val view = LocalView.current
+    val activity = remember(view) { view.context.findActivity() }
+    SideEffect {
+        if (activity != null) {
+            val controller = WindowCompat.getInsetsController(activity.window, view)
+            controller.isAppearanceLightStatusBars = !isDark
+            controller.isAppearanceLightNavigationBars = !isDark
+        }
+    }
     CompositionLocalProvider(LocalMyPrinterColors provides colors) {
         MaterialTheme(
             colorScheme = if (isDark) DarkScheme else LightScheme,
@@ -308,4 +332,10 @@ fun MyPrinterTheme(content: @Composable () -> Unit) {
             content = content,
         )
     }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
